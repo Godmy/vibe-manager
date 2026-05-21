@@ -1,9 +1,9 @@
 {
   "name": "vibe-manager",
   "displayName": "Vibe Manager",
-  "description": "Pure TypeScript VS Code extension scaffold with a TDD-ready setup for TypeScript indexing and audit workflows.",
-  "version": "0.0.1",
-  "publisher": "local",
+  "description": "Early preview of Vibe Manager. TypeScript indexing and SAMO audit workflows are coming soon.",
+  "version": "0.0.2",
+  "publisher": "vibe-manager",
   "license": "MIT",
   "icon": "static/icon.png",
   "repository": {
@@ -24,7 +24,7 @@
     "commands": [
       {
         "command": "vibeManager.showWorkspaceSummary",
-        "title": "Vibe Manager: Show Workspace Summary"
+        "title": "Vibe Manager: Run Folder Check"
       }
     ]
   },
@@ -33,10 +33,12 @@
     "build:test": "tsc -p ./src/test/tsconfig.json",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
-    "test:unit": "node ./node_modules/mocha/bin/mocha.js \"out/test/unit/**/*.test.js\"",
-    "test:integration": "node ./out/test/integration/runTest.js",
+    "test:unit": "node ./node_modules/mocha/bin/mocha.js \"out/test/src/test/unit/FolderCheck*.test.js\"",
+    "test:integration": "node ./out/test/src/test/integration/runTest.js",
     "test": "npm run build && npm run build:test && npm run test:unit",
     "test:all": "npm run test && npm run test:integration",
+    "vscode:prepublish": "npm run build",
+    "publish:vsce": "node ./node_modules/@vscode/vsce/vsce publish",
     "package": "node ./node_modules/@vscode/vsce/vsce package"
   },
   "devDependencies": {

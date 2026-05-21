@@ -1,0 +1,4 @@
+{
+  "folders": ["src", "docs"],
+  "outputFile": "reports/vibe-manager-report.json"
+}
