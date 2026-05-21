@@ -1,0 +1,54 @@
+{
+  "name": "vibe-manager",
+  "displayName": "Vibe Manager",
+  "description": "Pure TypeScript VS Code extension scaffold with a TDD-ready setup for TypeScript indexing and audit workflows.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "license": "MIT",
+  "icon": "static/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Godmy/vibe-manager.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:vibeManager.showWorkspaceSummary"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vibeManager.showWorkspaceSummary",
+        "title": "Vibe Manager: Show Workspace Summary"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "build:test": "tsc -p ./src/test/tsconfig.json",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test:unit": "node ./node_modules/mocha/bin/mocha.js \"out/test/unit/**/*.test.js\"",
+    "test:integration": "node ./out/test/integration/runTest.js",
+    "test": "npm run build && npm run build:test && npm run test:unit",
+    "test:all": "npm run test && npm run test:integration",
+    "package": "node ./node_modules/@vscode/vsce/vsce package"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.10.1",
+    "@types/vscode": "^1.95.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.3.2",
+    "eslint": "^9.17.0",
+    "mocha": "^11.7.1",
+    "typescript": "^5.7.2"
+  }
+}
