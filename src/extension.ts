@@ -1,12 +1,15 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { FolderCheckConfigLoader } from "./workspace/FolderCheckConfigLoader";
-import { FolderCheckService } from "./workspace/FolderCheckService";
+import { StructuralAudit } from "./audit/class/manager/structural-audit";
+import { AuditCustomization } from "./audit/type/struct/customization";
+import { FolderCheckConfigLoader } from "./workspace/class/manager/folder-check-config-loader";
+import { FolderCheck } from "./workspace/class/manager/folder-check";
 
 export function activate(context: vscode.ExtensionContext): void {
   const configLoader = new FolderCheckConfigLoader();
-  const service = new FolderCheckService();
+  const folderCheck = new FolderCheck();
+  const structuralAudit = new StructuralAudit();
 
   context.subscriptions.push(
     vscode.commands.registerCommand("vibeManager.showWorkspaceSummary", async () => {
@@ -20,6 +23,22 @@ export function activate(context: vscode.ExtensionContext): void {
       const workspaceRoot = workspaceFolder.uri.fsPath;
       let selectedFolders: string[] | undefined;
       let outputPath: string | undefined;
+      let customization: AuditCustomization = {
+        customClusterList: [],
+        customDataExtensionList: [],
+        customJointConstList: [],
+        customJointTypeList: [],
+        customJointInterfaceList: [],
+    customJointClassList: [],
+    customJointFunctionList: [],
+    customJointComponentList: [],
+    customJointDataList: [],
+    customFileNameAllList: [],
+    customFileNameOtherList: [],
+    customFileNameComponentList: [],
+    customFileNameStateList: [],
+    customFileNameTestList: []
+      };
 
       try {
         const config = await configLoader.load(workspaceRoot);
@@ -29,6 +48,7 @@ export function activate(context: vscode.ExtensionContext): void {
           outputPath = path.isAbsolute(config.outputFile)
             ? config.outputFile
             : path.join(workspaceRoot, config.outputFile);
+          customization = config;
         }
       } catch (error) {
         void vscode.window.showErrorMessage(
@@ -38,7 +58,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
 
       if (!selectedFolders || !outputPath) {
-        const selectableFolders = await service.listSelectableFolders(workspaceRoot);
+        const selectableFolders = await folderCheck.listSelectableFolders(workspaceRoot);
 
         if (selectableFolders.length === 0) {
           void vscode.window.showWarningMessage(
@@ -97,12 +117,16 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      const report = await service.createReport(workspaceRoot, selectedFolders);
+      const report = await structuralAudit.createReport(
+        workspaceRoot,
+        selectedFolders,
+        customization
+      );
 
       await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
       await fs.promises.writeFile(outputPath, JSON.stringify(report, null, 2), "utf8");
 
-      void vscode.window.showInformationMessage(`Saved folder check report to ${outputPath}`);
+      void vscode.window.showInformationMessage(`Saved structural audit report to ${outputPath}`);
     })
   );
 }

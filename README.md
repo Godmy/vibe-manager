@@ -1,17 +1,22 @@
 # Vibe Manager VS Code Extension
 
-Early preview release.
+Early preview of a structural audit extension for TypeScript, Svelte, and SAMO-style folder rules.
 
-TypeScript indexing and SAMO-based audit workflows are coming soon.
+## What it does today
 
-## What is included
+`Vibe Manager: Run Folder Check` generates a JSON audit report for one or more configured folders.
 
-- one command: `Vibe Manager: Run Folder Check`
-- user can configure which workspace-root folders to inspect in a file
-- user can configure where the generated JSON report should be saved
-- if no config file exists, the extension falls back to interactive folder and file selection
-- extension runtime based only on `node` and `vscode`
-- unit tests and integration test scaffold for TDD-oriented development
+Current checks include:
+
+- allowed `cluster` names
+- allowed `joint` names by cluster
+- allowed file names for `component`, `state`, `test`, and generic folders
+- allowed data extensions
+- TypeScript export policy
+- basic `index.svelte` checks around state delegation
+- inline Svelte declaration detection with relocation recommendations
+
+The extension runs only on `node` and the VS Code API. No local Python runtime is required.
 
 ## Quick start
 
@@ -23,16 +28,12 @@ npm test
 
 Then open `vibe-manager` in VS Code and press `F5` to launch the Extension Development Host.
 
-## Coming soon
-
-- TypeScript project indexation
-- SAMO-oriented audit flows
-- richer report formats
-- persistent workspace analysis workflows
-
 ## Command
 
-- `Vibe Manager: Run Folder Check` reads `vibe-manager.config.json` from the workspace root when it exists. The config defines which folders to inspect and where to save the JSON report. Without the config file, the extension asks for folder selection and output path interactively.
+`Vibe Manager: Run Folder Check` reads `vibe-manager.config.json` from the workspace root when it exists.
+
+- If the config file exists, the command uses its folder list, output path, and audit customization.
+- If the config file does not exist, the command falls back to interactive folder and output selection.
 
 ## Config file
 
@@ -40,13 +41,68 @@ Create `vibe-manager.config.json` in the workspace root:
 
 ```json
 {
-  "folders": ["src", "docs"],
-  "outputFile": "reports/vibe-manager-report.json"
+  "folders": ["../stylist-svelte/src/lib"],
+  "outputFile": "reports/structural-audit-report.json",
+  "customClusterList": [],
+  "customDataExtensionList": [],
+  "customJointConstList": [],
+  "customJointTypeList": [],
+  "customJointInterfaceList": [],
+  "customJointClassList": [],
+  "customJointFunctionList": [],
+  "customJointComponentList": [],
+  "customJointDataList": [],
+  "customFileNameAllList": [],
+  "customFileNameOtherList": [],
+  "customFileNameComponentList": [],
+  "customFileNameStateList": [],
+  "customFileNameTestList": []
 }
 ```
 
-- `folders`: list of workspace-root folders to inspect
-- `outputFile`: output path for the generated JSON report, relative to the workspace root or absolute
+Field overview:
+
+- `folders`: folders to inspect, relative to the workspace root or absolute
+- `outputFile`: target JSON report path, relative to the workspace root or absolute
+- `customClusterList`: extra cluster folder names
+- `customDataExtensionList`: extra allowed data file extensions
+- `customJoint*List`: extra joint names per cluster
+- `customFileName*List`: extra allowed file names for the matching rule bucket
+
+The customization fields are opt-in escape hatches. They let a user extend the audit model locally at their own risk.
+
+## Report shape
+
+The generated JSON report contains:
+
+- per-target audit entries
+- violations with `ruleId`, `message`, `severity`, and `recommendation`
+- grouped counts by severity and rule id
+- grouped relocation recommendations by source path
+
+## Rule registry direction
+
+The current code already centralizes error ids, report messages, and recommendations.
+
+The next step is a single rule registry object that also stores:
+
+- severity
+- ADR references
+- rule taxonomy metadata
+
+See [docs/rule-registry.md](docs/rule-registry.md).
+
+## Current limits
+
+This release does not yet cover the full ADR surface of `stylist-svelte`.
+
+Notable gaps still include:
+
+- family depth validation
+- legacy joint migration rules such as `interface/role`
+- `interface/recipe` semantic checks
+- deeper `const/*` shape validation
+- richer Svelte 5 syntax and accessibility checks
 
 ## Tests
 

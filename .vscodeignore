@@ -7,3 +7,4 @@ tsconfig.json
 src/test/**
 tsconfig.*.json
 eslint.config.js
+vibe-manager.config.json

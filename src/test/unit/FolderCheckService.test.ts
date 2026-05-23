@@ -2,13 +2,13 @@ import * as assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { FolderCheckService } from "../../workspace/FolderCheckService";
+import { FolderCheck } from "../../workspace/class/manager/folder-check";
 
 async function createTempWorkspace(): Promise<string> {
   return fs.promises.mkdtemp(path.join(os.tmpdir(), "vibe-manager-"));
 }
 
-describe("FolderCheckService", () => {
+describe("FolderCheck", () => {
   it("lists only visible top-level folders", async () => {
     const workspaceRoot = await createTempWorkspace();
 
@@ -17,7 +17,7 @@ describe("FolderCheckService", () => {
     await fs.promises.mkdir(path.join(workspaceRoot, ".git"));
     await fs.promises.writeFile(path.join(workspaceRoot, "README.md"), "readme", "utf8");
 
-    const service = new FolderCheckService();
+    const service = new FolderCheck();
     const folders = await service.listSelectableFolders(workspaceRoot);
 
     assert.deepEqual(folders, ["src", "test"]);
@@ -43,7 +43,7 @@ describe("FolderCheckService", () => {
     );
     await fs.promises.writeFile(path.join(workspaceRoot, "docs", "guide.md"), "# guide", "utf8");
 
-    const service = new FolderCheckService();
+    const service = new FolderCheck();
     const report = await service.createReport(workspaceRoot, ["src", "docs"]);
 
     assert.equal(report.workspaceName, path.basename(workspaceRoot));

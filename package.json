@@ -1,8 +1,8 @@
 {
   "name": "vibe-manager",
   "displayName": "Vibe Manager",
-  "description": "Early preview of Vibe Manager. TypeScript indexing and SAMO audit workflows are coming soon.",
-  "version": "0.0.2",
+  "description": "Early preview structural audit for TypeScript, Svelte, and SAMO-style folder rules.",
+  "version": "0.0.3",
   "publisher": "vibe-manager",
   "license": "MIT",
   "icon": "static/icon.png",
@@ -15,6 +15,13 @@
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "audit",
+    "typescript",
+    "svelte",
+    "architecture",
+    "samo"
   ],
   "activationEvents": [
     "onCommand:vibeManager.showWorkspaceSummary"
@@ -33,7 +40,7 @@
     "build:test": "tsc -p ./src/test/tsconfig.json",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
-    "test:unit": "node ./node_modules/mocha/bin/mocha.js \"out/test/src/test/unit/FolderCheck*.test.js\"",
+    "test:unit": "node ./node_modules/mocha/bin/mocha.js \"out/test/src/test/unit/*.test.js\"",
     "test:integration": "node ./out/test/src/test/integration/runTest.js",
     "test": "npm run build && npm run build:test && npm run test:unit",
     "test:all": "npm run test && npm run test:integration",

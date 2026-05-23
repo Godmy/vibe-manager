@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # VS Code Extension Manager
 out/
 *.vsix
+
+# Vibe Manager reports
+reports/
