@@ -4,9 +4,9 @@ import {
 } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
-import { joinRelativePath } from "../../script/join-relative-path";
-import { readSvelteScriptContent } from "../../script/read-svelte-script-content";
+import { createAuditViolation } from "../../create/audit-violation";
+import { joinRelativePath } from "../../join/relative-path";
+import { readSvelteScriptContent } from "../../read/svelte-script-content";
 
 export async function checkInvalidSvelteScript(
   currentDirectory: string,
@@ -34,8 +34,7 @@ export async function checkInvalidSvelteScript(
       await createAuditViolation(
         ERROR.INVALID_SVELTE_SCRIPT,
         ERROR_MESSAGE[ERROR.INVALID_SVELTE_SCRIPT],
-        relativeFilePath,
-        "warning"
+        relativeFilePath
       )
     );
     return;
@@ -48,8 +47,7 @@ export async function checkInvalidSvelteScript(
       await createAuditViolation(
         ERROR.INVALID_SVELTE_SCRIPT,
         ERROR_MESSAGE[ERROR.INVALID_SVELTE_SCRIPT],
-        relativeFilePath,
-        "warning"
+        relativeFilePath
       )
     );
     return;
@@ -60,8 +58,7 @@ export async function checkInvalidSvelteScript(
       await createAuditViolation(
         ERROR.INVALID_SVELTE_REEXPORT,
         ERROR_MESSAGE[ERROR.INVALID_SVELTE_REEXPORT],
-        relativeFilePath,
-        "error"
+        relativeFilePath
       )
     );
   }

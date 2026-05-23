@@ -3,9 +3,9 @@ import { ERROR } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { FileNameRule } from "../../../type/struct/file-name-rule";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
-import { formatMessageTemplate } from "../../script/format-message-template";
-import { joinRelativePath } from "../../script/join-relative-path";
+import { createAuditViolation } from "../../create/audit-violation";
+import { formatErrorMessage } from "../../format/error-message";
+import { joinRelativePath } from "../../join/relative-path";
 
 export async function checkInvalidFileName(
   relativeDirectory: string,
@@ -29,17 +29,30 @@ export async function checkInvalidFileName(
 
   for (const fileName of files) {
     if (!allowedFiles.has(fileName)) {
+      const allowedFileNameList = formatAllowedFileNameList(allowedFiles);
+
       stats.violations.push(
         await createAuditViolation(
           ERROR.INVALID_FILE_NAME,
-          formatMessageTemplate(ERROR_MESSAGE[ERROR.INVALID_FILE_NAME], {
+          formatErrorMessage(ERROR_MESSAGE[ERROR.INVALID_FILE_NAME], {
             fileName,
             joint
           }),
           joinRelativePath(relativeDirectory, fileName),
-          "error"
+          {
+            fileName,
+            joint,
+            allowedFileNameList
+          }
         )
       );
     }
   }
+}
+
+function formatAllowedFileNameList(fileNameSet: Set<string>): string {
+  return Array.from(fileNameSet)
+    .sort((left, right) => left.localeCompare(right))
+    .map((fileName) => `'${fileName}'`)
+    .join(", ");
 }

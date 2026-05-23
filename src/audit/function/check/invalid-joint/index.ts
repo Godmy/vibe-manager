@@ -1,8 +1,8 @@
 import { ERROR } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
-import { formatMessageTemplate } from "../../script/format-message-template";
+import { createAuditViolation } from "../../create/audit-violation";
+import { formatErrorMessage } from "../../format/error-message";
 
 export async function checkInvalidJoint(
   relativeDirectory: string,
@@ -19,16 +19,29 @@ export async function checkInvalidJoint(
   const jointSet = clusterJointMap.get(cluster);
 
   if (jointSet && !jointSet.has(joint)) {
+    const allowedJointList = formatAllowedValueList(jointSet);
+
     stats.violations.push(
       await createAuditViolation(
         ERROR.INVALID_JOINT,
-        formatMessageTemplate(ERROR_MESSAGE[ERROR.INVALID_JOINT], {
+        formatErrorMessage(ERROR_MESSAGE[ERROR.INVALID_JOINT], {
           joint,
           cluster
         }),
         relativeDirectory,
-        "error"
+        {
+          joint,
+          cluster,
+          allowedJointList
+        }
       )
     );
   }
+}
+
+function formatAllowedValueList(valueSet: Set<string>): string {
+  return Array.from(valueSet)
+    .sort((left, right) => left.localeCompare(right))
+    .map((value) => `'${value}'`)
+    .join(", ");
 }

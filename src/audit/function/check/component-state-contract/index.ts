@@ -4,12 +4,12 @@ import {
 } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
-import { hasSvelteStateConst } from "../../script/has-svelte-state-const";
-import { hasSvelteStateImport } from "../../script/has-svelte-state-import";
-import { joinRelativePath } from "../../script/join-relative-path";
-import { readSvelteScriptContent } from "../../script/read-svelte-script-content";
-import { resolveSiblingStateDirectory } from "../../script/resolve-sibling-state-directory";
+import { createAuditViolation } from "../../create/audit-violation";
+import { hasSvelteStateConst } from "../../has/svelte-state-const";
+import { hasSvelteStateImport } from "../../has/svelte-state-import";
+import { joinRelativePath } from "../../join/relative-path";
+import { readSvelteScriptContent } from "../../read/svelte-script-content";
+import { resolveSiblingStateDirectory } from "../../resolve/sibling-state-directory";
 
 export async function checkComponentStateContract(
   currentDirectory: string,
@@ -48,20 +48,23 @@ export async function checkComponentStateContract(
       await createAuditViolation(
         ERROR.MISSING_COMPONENT_STATE_CONST,
         ERROR_MESSAGE[ERROR.MISSING_COMPONENT_STATE_CONST],
-        relativeFilePath,
-        "error"
+        relativeFilePath
       )
     );
     return;
   }
 
   if (!hasSvelteStateImport(scriptContent)) {
+    const expectedImportSource = formatExpectedImportSource(relativeDirectory);
+
     stats.violations.push(
       await createAuditViolation(
         ERROR.MISSING_COMPONENT_STATE_IMPORT,
         ERROR_MESSAGE[ERROR.MISSING_COMPONENT_STATE_IMPORT],
         relativeFilePath,
-        "error"
+        {
+          expectedImportSource
+        }
       )
     );
   }
@@ -82,4 +85,12 @@ async function hasSiblingStateEntry(siblingStateDirectory: string): Promise<bool
     fs.existsSync(joinRelativePath(siblingStateDirectory, "index.svelte.ts")) ||
     fs.existsSync(joinRelativePath(siblingStateDirectory, "index.ts"))
   );
+}
+
+function formatExpectedImportSource(relativeDirectory: string): string {
+  const segmentList = relativeDirectory.split("/");
+  const domain = segmentList[0] ?? "unknown";
+  const familySegmentList = segmentList.slice(3);
+
+  return `'${[domain, "function", "state", ...familySegmentList].join("/")}'`;
 }

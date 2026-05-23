@@ -5,9 +5,10 @@ import {
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
 import { countBraceDelta } from "../../count/brace-delta";
-import { createAuditViolation } from "../../script/create-audit-violation";
-import { formatMessageTemplate } from "../../script/format-message-template";
-import { joinRelativePath } from "../../script/join-relative-path";
+import { createAuditViolation } from "../../create/audit-violation";
+import { buildEntityRelativePath } from "../../build/entity-relative-path";
+import { formatErrorMessage } from "../../format/error-message";
+import { joinRelativePath } from "../../join/relative-path";
 
 const EXPORT_KIND_BY_CLUSTER: Record<string, string> = {
   const: "const",
@@ -18,6 +19,7 @@ const EXPORT_KIND_BY_CLUSTER: Record<string, string> = {
 };
 
 export async function checkInvalidTsExportPolicy(
+  targetPath: string,
   currentDirectory: string,
   relativeDirectory: string,
   segments: string[],
@@ -50,24 +52,31 @@ export async function checkInvalidTsExportPolicy(
       stats.violations.push(
         await createAuditViolation(
           ERROR.MISSING_TS_EXPORT,
-          formatMessageTemplate(ERROR_MESSAGE[ERROR.MISSING_TS_EXPORT], {
+          formatErrorMessage(ERROR_MESSAGE[ERROR.MISSING_TS_EXPORT], {
             expectedExportKind,
             fileName: fileEntry.name
           }),
-          relativeFilePath,
-          "error"
+          relativeFilePath
         )
       );
     } else if (policyResult.exportCount > 1) {
+      const foundExportDeclarationList = formatExportDeclarationList(
+        policyResult.exportDeclarationKindList
+      );
+
       stats.violations.push(
         await createAuditViolation(
           ERROR.INVALID_TS_EXPORT_COUNT,
-          formatMessageTemplate(ERROR_MESSAGE[ERROR.INVALID_TS_EXPORT_COUNT], {
+          formatErrorMessage(ERROR_MESSAGE[ERROR.INVALID_TS_EXPORT_COUNT], {
             expectedExportKind,
-            fileName: fileEntry.name
+            fileName: fileEntry.name,
+            foundExportDeclarationList
           }),
           relativeFilePath,
-          "error"
+          {
+            expectedExportKind,
+            foundExportDeclarationList
+          }
         )
       );
     }
@@ -76,39 +85,63 @@ export async function checkInvalidTsExportPolicy(
       stats.violations.push(
         await createAuditViolation(
           ERROR.INVALID_TS_REEXPORT,
-          formatMessageTemplate(ERROR_MESSAGE[ERROR.INVALID_TS_REEXPORT], {
+          formatErrorMessage(ERROR_MESSAGE[ERROR.INVALID_TS_REEXPORT], {
             fileName: fileEntry.name
           }),
-          relativeFilePath,
-          "error"
+          relativeFilePath
         )
       );
     }
 
     if (policyResult.hasInvalidExportKind) {
+      const actualExportKind = policyResult.invalidExportKindList[0] ?? cluster;
+      const recommendedRelativePath = buildRecommendedRelativePath(
+        targetPath,
+        segments,
+        fileEntry.name,
+        actualExportKind
+      );
+      const recommendedLocation = recommendedRelativePath
+        ? `'${recommendedRelativePath}'`
+        : `the '${actualExportKind}' cluster`;
+
       stats.violations.push(
         await createAuditViolation(
           ERROR.INVALID_TS_EXPORT_KIND,
-          formatMessageTemplate(ERROR_MESSAGE[ERROR.INVALID_TS_EXPORT_KIND], {
+          formatErrorMessage(ERROR_MESSAGE[ERROR.INVALID_TS_EXPORT_KIND], {
             expectedExportKind,
             fileName: fileEntry.name
           }),
           relativeFilePath,
-          "error"
+          {
+            actualExportKind,
+            recommendedLocation
+          }
         )
       );
     }
 
     for (const declarationName of policyResult.hiddenDeclarationNameList) {
+      const declarationKind = policyResult.hiddenDeclarationKindByName[declarationName] ?? "const";
+      const recommendedRelativePath = buildEntityRelativePath(
+        segments[0] ?? "unknown",
+        declarationKind,
+        declarationName
+      );
+
       stats.violations.push(
         await createAuditViolation(
           ERROR.INVALID_TS_HIDDEN_DECLARATION,
-          formatMessageTemplate(ERROR_MESSAGE[ERROR.INVALID_TS_HIDDEN_DECLARATION], {
+          formatErrorMessage(ERROR_MESSAGE[ERROR.INVALID_TS_HIDDEN_DECLARATION], {
             declarationName,
             fileName: fileEntry.name
           }),
           relativeFilePath,
-          "warning"
+          {
+            declarationKind,
+            declarationName,
+            recommendedRelativePath
+          }
         )
       );
     }
@@ -122,10 +155,19 @@ function inspectTsExportPolicy(
   exportCount: number;
   hasReexport: boolean;
   hasInvalidExportKind: boolean;
+  exportDeclarationKindList: string[];
+  invalidExportKindList: string[];
+  hiddenDeclarationKindByName: Record<string, "const" | "type" | "interface" | "function" | "class">;
   hiddenDeclarationNameList: string[];
 } {
   const lineList = fullContent.split(/\r?\n/);
+  const exportDeclarationKindList: string[] = [];
+  const hiddenDeclarationKindByName: Record<
+    string,
+    "const" | "type" | "interface" | "function" | "class"
+  > = {};
   const hiddenDeclarationNameList: string[] = [];
+  const invalidExportKindList: string[] = [];
   let braceDepth = 0;
   let exportCount = 0;
   let hasReexport = false;
@@ -150,16 +192,22 @@ function inspectTsExportPolicy(
       if (/^export\s+\{/.test(trimmedLine)) {
         exportCount += 1;
         hasReexport = true;
+        exportDeclarationKindList.push("re-export");
       } else if (isExpectedExportKind(trimmedLine, expectedExportKind)) {
         exportCount += 1;
+        exportDeclarationKindList.push(detectExportKind(trimmedLine));
       } else if (/^export\s+/.test(trimmedLine)) {
         exportCount += 1;
         hasInvalidExportKind = true;
+        const exportKind = detectExportKind(trimmedLine);
+        exportDeclarationKindList.push(exportKind);
+        invalidExportKindList.push(exportKind);
       } else {
-        const declarationName = extractTopLevelDeclarationName(trimmedLine);
+        const declaration = extractTopLevelDeclaration(trimmedLine);
 
-        if (declarationName) {
-          hiddenDeclarationNameList.push(declarationName);
+        if (declaration) {
+          hiddenDeclarationNameList.push(declaration.name);
+          hiddenDeclarationKindByName[declaration.name] = declaration.kind;
         }
       }
     }
@@ -172,6 +220,9 @@ function inspectTsExportPolicy(
     exportCount,
     hasReexport,
     hasInvalidExportKind,
+    exportDeclarationKindList,
+    invalidExportKindList,
+    hiddenDeclarationKindByName,
     hiddenDeclarationNameList
   };
 }
@@ -184,42 +235,125 @@ function isExpectedExportKind(trimmedLine: string, expectedExportKind: string): 
   return new RegExp(`^export\\s+${expectedExportKind}\\b`).test(trimmedLine);
 }
 
-function extractTopLevelDeclarationName(trimmedLine: string): string | null {
+function extractTopLevelDeclaration(
+  trimmedLine: string
+): { kind: "const" | "type" | "interface" | "function" | "class"; name: string } | null {
   const constMatch = trimmedLine.match(/^(const|let|var)\s+([A-Za-z_$][\w$]*)\b/);
 
   if (constMatch) {
-    return constMatch[2];
+    return {
+      kind: "const",
+      name: constMatch[2]
+    };
   }
 
   const typeMatch = trimmedLine.match(/^type\s+([A-Za-z_$][\w$]*)\b/);
 
   if (typeMatch) {
-    return typeMatch[1];
+    return {
+      kind: "type",
+      name: typeMatch[1]
+    };
   }
 
   const interfaceMatch = trimmedLine.match(/^interface\s+([A-Za-z_$][\w$]*)\b/);
 
   if (interfaceMatch) {
-    return interfaceMatch[1];
+    return {
+      kind: "interface",
+      name: interfaceMatch[1]
+    };
   }
 
   const classMatch = trimmedLine.match(/^class\s+([A-Za-z_$][\w$]*)\b/);
 
   if (classMatch) {
-    return classMatch[1];
+    return {
+      kind: "class",
+      name: classMatch[1]
+    };
   }
 
   const functionMatch = trimmedLine.match(/^(async\s+)?function\s+([A-Za-z_$][\w$]*)\b/);
 
   if (functionMatch) {
-    return functionMatch[2];
-  }
-
-  const enumMatch = trimmedLine.match(/^enum\s+([A-Za-z_$][\w$]*)\b/);
-
-  if (enumMatch) {
-    return enumMatch[1];
+    return {
+      kind: "function",
+      name: functionMatch[2]
+    };
   }
 
   return null;
+}
+
+function detectExportKind(trimmedLine: string): string {
+  if (/^export\s+default\b/.test(trimmedLine)) {
+    return "default";
+  }
+
+  if (/^export\s+type\b/.test(trimmedLine)) {
+    return "type";
+  }
+
+  if (/^export\s+interface\b/.test(trimmedLine)) {
+    return "interface";
+  }
+
+  if (/^export\s+class\b/.test(trimmedLine)) {
+    return "class";
+  }
+
+  if (/^export\s+(async\s+)?function\b/.test(trimmedLine)) {
+    return "function";
+  }
+
+  if (/^export\s+enum\b/.test(trimmedLine)) {
+    return "enum";
+  }
+
+  if (/^export\s+(const|let|var)\b/.test(trimmedLine)) {
+    return "const";
+  }
+
+  return "cluster";
+}
+
+function buildRecommendedRelativePath(
+  targetPath: string,
+  segments: string[],
+  fileName: string,
+  actualExportKind: string
+): string | undefined {
+  if (actualExportKind === "default" || segments.length < 2) {
+    return undefined;
+  }
+
+  const recommendedCluster = actualExportKind === "enum" ? "type" : actualExportKind;
+  const targetSegmentList = targetPath.split("/").filter((segment) => segment.length > 0);
+  const pathSegmentList = [...targetSegmentList, ...segments];
+  const clusterIndex = targetSegmentList.length + 1;
+
+  pathSegmentList[clusterIndex] = recommendedCluster;
+
+  return [...pathSegmentList, fileName].join("/");
+}
+
+function formatExportDeclarationList(exportDeclarationKindList: string[]): string {
+  const labelList = exportDeclarationKindList.map((exportKind) =>
+    exportKind === "re-export" ? "'re-export'" : `'export ${exportKind}'`
+  );
+
+  if (labelList.length === 0) {
+    return "no exports";
+  }
+
+  if (labelList.length === 1) {
+    return labelList[0];
+  }
+
+  if (labelList.length === 2) {
+    return `${labelList[0]} and ${labelList[1]}`;
+  }
+
+  return `${labelList.slice(0, -1).join(", ")}, and ${labelList[labelList.length - 1]}`;
 }

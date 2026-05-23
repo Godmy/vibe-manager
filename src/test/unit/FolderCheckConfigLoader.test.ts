@@ -20,7 +20,7 @@ describe("FolderCheckConfigLoader", () => {
     await fs.promises.rm(workspaceRoot, { recursive: true, force: true });
   });
 
-  it("loads folder selection and output file from config", async () => {
+  it("loads folder selection and output folder from config", async () => {
     const workspaceRoot = await createTempWorkspace();
     const loader = new FolderCheckConfigLoader();
 
@@ -29,7 +29,7 @@ describe("FolderCheckConfigLoader", () => {
       JSON.stringify(
         {
           folders: ["src", "docs"],
-          outputFile: "reports/audit.json"
+          outputFolder: "reports"
         },
         null,
         2
@@ -41,7 +41,7 @@ describe("FolderCheckConfigLoader", () => {
 
     assert.deepEqual(config, {
       folders: ["src", "docs"],
-      outputFile: "reports/audit.json",
+      outputFolder: "reports",
       customClusterList: [],
       customDataExtensionList: [],
       customJointConstList: [],
@@ -70,7 +70,7 @@ describe("FolderCheckConfigLoader", () => {
       JSON.stringify(
         {
           folders: ["src"],
-          outputFile: "reports/audit.json",
+          outputFolder: "reports",
           customClusterList: ["schema", "asset"],
           customDataExtensionList: [".glsl", "txt"],
           customJointConstList: ["single"],
@@ -96,7 +96,7 @@ describe("FolderCheckConfigLoader", () => {
 
     assert.deepEqual(config, {
       folders: ["src"],
-      outputFile: "reports/audit.json",
+      outputFolder: "reports",
       customClusterList: ["schema", "asset"],
       customDataExtensionList: [".glsl", "txt"],
       customJointConstList: ["single"],

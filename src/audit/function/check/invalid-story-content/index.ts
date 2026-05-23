@@ -2,8 +2,8 @@ import * as fs from "node:fs";
 import { ERROR } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
-import { joinRelativePath } from "../../script/join-relative-path";
+import { createAuditViolation } from "../../create/audit-violation";
+import { joinRelativePath } from "../../join/relative-path";
 
 export async function checkInvalidStoryContent(
   currentDirectory: string,
@@ -33,8 +33,7 @@ export async function checkInvalidStoryContent(
     await createAuditViolation(
       ERROR.INVALID_STORY_CONTENT,
       ERROR_MESSAGE[ERROR.INVALID_STORY_CONTENT],
-      joinRelativePath(relativeDirectory, storyEntry.name),
-      "error"
+      joinRelativePath(relativeDirectory, storyEntry.name)
     )
   );
 }

@@ -1,6 +1,6 @@
 {
-  "folders": ["../stylist-svelte/src/lib"],
-  "outputFile": "reports/structural-audit-report.json",
+  "folders": ["src"],
+  "outputFolder": "reports",
   "customClusterList": [],
   "customDataExtensionList": [],
   "customJointConstList": [],

@@ -2,7 +2,8 @@ import * as fs from "node:fs";
 import { ERROR } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
+import { createAuditViolation } from "../../create/audit-violation";
+import { joinRelativePath } from "../../join/relative-path";
 
 export async function checkMissingTestEntry(
   relativeDirectory: string,
@@ -25,7 +26,10 @@ export async function checkMissingTestEntry(
       ERROR.MISSING_TEST_ENTRY,
       ERROR_MESSAGE[ERROR.MISSING_TEST_ENTRY],
       relativeDirectory,
-      "error"
+      {
+        primaryExpectedFilePath: joinRelativePath(relativeDirectory, "index.test.ts"),
+        secondaryExpectedFilePath: joinRelativePath(relativeDirectory, "index.ts")
+      }
     )
   );
 }

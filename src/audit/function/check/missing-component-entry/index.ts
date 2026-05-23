@@ -1,11 +1,9 @@
 import * as fs from "node:fs";
-import {
-  ERROR
-} from "../../../const/object/error";
+import { ERROR } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
-import { formatMessageTemplate } from "../../script/format-message-template";
+import { createAuditViolation } from "../../create/audit-violation";
+import { formatErrorMessage } from "../../format/error-message";
 
 export async function checkMissingComponentEntry(
   relativeDirectory: string,
@@ -21,23 +19,31 @@ export async function checkMissingComponentEntry(
   const fileNameList = entries.filter((entry) => entry.isFile()).map((entry) => entry.name);
 
   if (!fileNameList.includes("index.ts")) {
+    const expectedFilePath = `${relativeDirectory}/index.ts`;
+
     stats.violations.push(
       await createAuditViolation(
         ERROR.MISSING_COMPONENT_BARREL,
-        formatMessageTemplate(ERROR_MESSAGE[ERROR.MISSING_COMPONENT_BARREL], { joint }),
+        formatErrorMessage(ERROR_MESSAGE[ERROR.MISSING_COMPONENT_BARREL], { joint }),
         relativeDirectory,
-        "error"
+        {
+          expectedFilePath
+        }
       )
     );
   }
 
   if (!fileNameList.includes("index.svelte")) {
+    const expectedFilePath = `${relativeDirectory}/index.svelte`;
+
     stats.violations.push(
       await createAuditViolation(
         ERROR.MISSING_COMPONENT_SVELTE,
-        formatMessageTemplate(ERROR_MESSAGE[ERROR.MISSING_COMPONENT_SVELTE], { joint }),
+        formatErrorMessage(ERROR_MESSAGE[ERROR.MISSING_COMPONENT_SVELTE], { joint }),
         relativeDirectory,
-        "error"
+        {
+          expectedFilePath
+        }
       )
     );
   }

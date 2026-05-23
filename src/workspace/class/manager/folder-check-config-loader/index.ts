@@ -20,8 +20,8 @@ export class FolderCheckConfigLoader {
       throw new Error("vibe-manager.config.json must contain a string[] field named 'folders'.");
     }
 
-    if (typeof parsed.outputFile !== "string" || parsed.outputFile.trim() === "") {
-      throw new Error("vibe-manager.config.json must contain a string field named 'outputFile'.");
+    if (typeof parsed.outputFolder !== "string" || parsed.outputFolder.trim() === "") {
+      throw new Error("vibe-manager.config.json must contain a string field named 'outputFolder'.");
     }
 
     if (
@@ -194,7 +194,7 @@ export class FolderCheckConfigLoader {
 
     return {
       folders: parsed.folders,
-      outputFile: parsed.outputFile,
+      outputFolder: parsed.outputFolder,
       customClusterList: parsed.customClusterList ?? [],
       customDataExtensionList: parsed.customDataExtensionList ?? [],
       customJointConstList: parsed.customJointConstList ?? [],

@@ -4,19 +4,19 @@ import {
 } from "../../../const/object/error";
 import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
-import { createAuditViolation } from "../../script/create-audit-violation";
+import { createAuditViolation } from "../../create/audit-violation";
 import { countBraceDelta } from "../../count/brace-delta";
-import { doesSvelteFunctionUseState } from "../../script/does-svelte-function-use-state";
-import { extractSvelteManagerImportNameList } from "../../script/extract-svelte-manager-import-name-list";
-import { formatMessageTemplate } from "../../script/format-message-template";
-import { hasSvelteImport } from "../../script/has-svelte-import";
-import { isHardcodedSvelteValue } from "../../script/is-hardcoded-svelte-value";
-import { isManagerBasedSvelteConst } from "../../script/is-manager-based-svelte-const";
-import { isSvelteContextConst } from "../../script/is-svelte-context-const";
-import { isSvelteDispatchConst } from "../../script/is-svelte-dispatch-const";
-import { joinRelativePath } from "../../script/join-relative-path";
-import { readSvelteScriptContent } from "../../script/read-svelte-script-content";
-import { toAuditRecommendation } from "../../script/to-audit-recommendation";
+import { hasSvelteStateFunction } from "../../has/svelte-function-use-state";
+import { extractSvelteManagerImportNameList } from "../../extract/svelte-manager-import-name-list";
+import { formatErrorMessage } from "../../format/error-message";
+import { hasSvelteImport } from "../../has/svelte-import";
+import { isHardcodedSvelteValue } from "../../is/hardcoded-svelte-value";
+import { isManagerBasedSvelteConst } from "../../is/manager-based-svelte-const";
+import { isSvelteContextConst } from "../../is/svelte-context-const";
+import { isSvelteDispatchConst } from "../../is/svelte-dispatch-const";
+import { joinRelativePath } from "../../join/relative-path";
+import { readSvelteScriptContent } from "../../read/svelte-script-content";
+import { toAuditRecommendation } from "../../to/audit-recommendation";
 
 const SVELTE_RUNE_PREFIX_LIST = [
   "$props",
@@ -114,11 +114,15 @@ export async function checkInlineSvelteDeclaration(
           stats.violations.push(
             await createAuditViolation(
               ERROR.INLINE_SVELTE_CONST,
-              formatMessageTemplate(ERROR_MESSAGE[ERROR.INLINE_SVELTE_CONST], {
+              formatErrorMessage(ERROR_MESSAGE[ERROR.INLINE_SVELTE_CONST], {
                 name: constName
               }),
               relativeFilePath,
-              "warning"
+              {
+                name: constName,
+                recommendedRelativePath:
+                  stats.recommendations[stats.recommendations.length - 1]?.recommendedRelativePath ?? ""
+              }
             )
           );
         }
@@ -132,9 +136,13 @@ export async function checkInlineSvelteDeclaration(
           stats.violations.push(
             await createAuditViolation(
               ERROR.INLINE_SVELTE_TYPE,
-              formatMessageTemplate(ERROR_MESSAGE[ERROR.INLINE_SVELTE_TYPE], { name: typeName }),
+              formatErrorMessage(ERROR_MESSAGE[ERROR.INLINE_SVELTE_TYPE], { name: typeName }),
               relativeFilePath,
-              "warning"
+              {
+                name: typeName,
+                recommendedRelativePath:
+                  stats.recommendations[stats.recommendations.length - 1]?.recommendedRelativePath ?? ""
+              }
             )
           );
         }
@@ -155,11 +163,15 @@ export async function checkInlineSvelteDeclaration(
           stats.violations.push(
             await createAuditViolation(
               ERROR.INLINE_SVELTE_INTERFACE,
-              formatMessageTemplate(ERROR_MESSAGE[ERROR.INLINE_SVELTE_INTERFACE], {
+              formatErrorMessage(ERROR_MESSAGE[ERROR.INLINE_SVELTE_INTERFACE], {
                 name: interfaceName
               }),
               relativeFilePath,
-              "warning"
+              {
+                name: interfaceName,
+                recommendedRelativePath:
+                  stats.recommendations[stats.recommendations.length - 1]?.recommendedRelativePath ?? ""
+              }
             )
           );
         }
@@ -174,7 +186,7 @@ export async function checkInlineSvelteDeclaration(
           ?.split("<")[0]
           ?.trim() ?? "";
 
-        if (functionName && !doesSvelteFunctionUseState(lineList, index)) {
+        if (functionName && !hasSvelteStateFunction(lineList, index)) {
           stats.recommendations.push(
             toAuditRecommendation(
               segments,
@@ -187,11 +199,15 @@ export async function checkInlineSvelteDeclaration(
           stats.violations.push(
             await createAuditViolation(
               ERROR.INLINE_SVELTE_FUNCTION,
-              formatMessageTemplate(ERROR_MESSAGE[ERROR.INLINE_SVELTE_FUNCTION], {
+              formatErrorMessage(ERROR_MESSAGE[ERROR.INLINE_SVELTE_FUNCTION], {
                 name: functionName
               }),
               relativeFilePath,
-              "warning"
+              {
+                name: functionName,
+                recommendedRelativePath:
+                  stats.recommendations[stats.recommendations.length - 1]?.recommendedRelativePath ?? ""
+              }
             )
           );
         }

@@ -16,7 +16,7 @@ export const ERROR_MESSAGE: Record<AuditError, string> = {
   [ERROR.INVALID_SVELTE_SCRIPT]: "Component 'index.svelte' must contain a valid '<script>...</script>' block.",
   [ERROR.INVALID_SVELTE_REEXPORT]: "Re-export is forbidden inside the component '<script>' block.",
   [ERROR.MISSING_TS_EXPORT]: "File '{fileName}' must contain exactly one 'export {expectedExportKind}' declaration.",
-  [ERROR.INVALID_TS_EXPORT_COUNT]: "File '{fileName}' must contain exactly one 'export {expectedExportKind}' declaration.",
+  [ERROR.INVALID_TS_EXPORT_COUNT]: "File '{fileName}' must contain exactly one 'export {expectedExportKind}' declaration; found {foundExportDeclarationList}.",
   [ERROR.INVALID_TS_REEXPORT]: "Re-export is forbidden inside '{fileName}'.",
   [ERROR.INVALID_TS_EXPORT_KIND]: "File '{fileName}' must use only 'export {expectedExportKind}' declarations.",
   [ERROR.INVALID_TS_HIDDEN_DECLARATION]: "Top-level non-export declaration '{declarationName}' is forbidden inside '{fileName}'.",

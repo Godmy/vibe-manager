@@ -1,15 +1,18 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { StructuralAudit } from "./audit/class/manager/structural-audit";
+import { Auditor } from "./audit/class/manager/auditor";
 import { AuditCustomization } from "./audit/type/struct/customization";
 import { FolderCheckConfigLoader } from "./workspace/class/manager/folder-check-config-loader";
 import { FolderCheck } from "./workspace/class/manager/folder-check";
+import { buildReportOutputPaths } from "./workspace/function/script/build-report-output-paths";
+import { createAuditReportJsonOutput } from "./workspace/function/script/create-audit-report-json-output";
+import { createAuditReportMarkdown } from "./workspace/function/script/create-audit-report-markdown";
 
 export function activate(context: vscode.ExtensionContext): void {
   const configLoader = new FolderCheckConfigLoader();
   const folderCheck = new FolderCheck();
-  const structuralAudit = new StructuralAudit();
+  const auditor = new Auditor();
 
   context.subscriptions.push(
     vscode.commands.registerCommand("vibeManager.showWorkspaceSummary", async () => {
@@ -45,9 +48,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
         if (config) {
           selectedFolders = config.folders;
-          outputPath = path.isAbsolute(config.outputFile)
-            ? config.outputFile
-            : path.join(workspaceRoot, config.outputFile);
+          outputPath = path.isAbsolute(config.outputFolder)
+            ? config.outputFolder
+            : path.join(workspaceRoot, config.outputFolder);
           customization = config;
         }
       } catch (error) {
@@ -83,20 +86,20 @@ export function activate(context: vscode.ExtensionContext): void {
           return;
         }
 
-        const saveUri = await vscode.window.showSaveDialog({
-          defaultUri: vscode.Uri.file(path.join(workspaceRoot, "vibe-manager-report.json")),
-          filters: {
-            JSON: ["json"]
-          },
-          saveLabel: "Save folder check report"
+        const outputFolderSelection = await vscode.window.showOpenDialog({
+          defaultUri: vscode.Uri.file(path.join(workspaceRoot, "reports")),
+          canSelectFiles: false,
+          canSelectFolders: true,
+          canSelectMany: false,
+          openLabel: "Select report output folder"
         });
 
-        if (!saveUri) {
+        if (!outputFolderSelection || outputFolderSelection.length === 0) {
           return;
         }
 
         selectedFolders = folderSelection.map((folder) => folder.label);
-        outputPath = saveUri.fsPath;
+        outputPath = outputFolderSelection[0].fsPath;
       }
 
       if (selectedFolders.length === 0) {
@@ -117,16 +120,34 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      const report = await structuralAudit.createReport(
+      const report = await auditor.createReport(
         workspaceRoot,
         selectedFolders,
         customization
       );
 
-      await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
-      await fs.promises.writeFile(outputPath, JSON.stringify(report, null, 2), "utf8");
+      const reportOutputPaths = buildReportOutputPaths(outputPath, report);
+      const markdownReport = createAuditReportMarkdown(
+        report,
+        workspaceRoot,
+        reportOutputPaths.reportDirectoryPath
+      );
 
-      void vscode.window.showInformationMessage(`Saved structural audit report to ${outputPath}`);
+      await fs.promises.mkdir(reportOutputPaths.reportDirectoryPath, { recursive: true });
+      await fs.promises.writeFile(
+        reportOutputPaths.jsonReportPath,
+        JSON.stringify(createAuditReportJsonOutput(report), null, 2),
+        "utf8"
+      );
+      await fs.promises.writeFile(
+        reportOutputPaths.markdownReportPath,
+        markdownReport,
+        "utf8"
+      );
+
+      void vscode.window.showInformationMessage(
+        `Saved structural audit reports to ${reportOutputPaths.reportDirectoryPath}`
+      );
     })
   );
 }
