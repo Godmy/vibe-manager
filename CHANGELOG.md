@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.4
+
+- Renamed the audit internals to a more consistent folder taxonomy.
+- Switched report generation to paired JSON and Markdown outputs in timestamped folders.
+- Added clickable source links in Markdown reports and canonical `error` identifiers in JSON.
+- Improved recommendation messages with concrete target paths and allowed-value hints.
+- Unified all audit findings under errors in both the internal model and generated reports.
+
 ## 0.0.3
 
 - Updated the extension documentation to describe the current structural audit feature set instead of a generic coming-soon placeholder.
