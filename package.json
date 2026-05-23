@@ -2,7 +2,7 @@
   "name": "vibe-manager",
   "displayName": "Vibe Manager",
   "description": "Early preview structural audit for TypeScript, Svelte, and SAMO-style folder rules.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "vibe-manager",
   "license": "MIT",
   "icon": "static/icon.png",
