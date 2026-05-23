@@ -5,6 +5,7 @@ import { FileNameRule } from "../../../type/struct/file-name-rule";
 import { AuditStats } from "../../../type/struct/stats";
 import { createAuditViolation } from "../../create/audit-violation";
 import { formatErrorMessage } from "../../format/error-message";
+import { formatAllowedValueList } from "../../format/allowed-value-list";
 import { joinRelativePath } from "../../join/relative-path";
 
 export async function checkInvalidFileName(
@@ -29,7 +30,7 @@ export async function checkInvalidFileName(
 
   for (const fileName of files) {
     if (!allowedFiles.has(fileName)) {
-      const allowedFileNameList = formatAllowedFileNameList(allowedFiles);
+      const allowedFileNameList = formatAllowedValueList(allowedFiles);
 
       stats.violations.push(
         await createAuditViolation(
@@ -48,11 +49,4 @@ export async function checkInvalidFileName(
       );
     }
   }
-}
-
-function formatAllowedFileNameList(fileNameSet: Set<string>): string {
-  return Array.from(fileNameSet)
-    .sort((left, right) => left.localeCompare(right))
-    .map((fileName) => `'${fileName}'`)
-    .join(", ");
 }

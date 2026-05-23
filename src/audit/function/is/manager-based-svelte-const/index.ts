@@ -1,3 +1,5 @@
+import { escapeRegExp } from "../../script/escape-reg-exp";
+
 export function isManagerBasedSvelteConst(
   rightHandSide: string,
   managerImportNameList: string[]
@@ -12,8 +14,4 @@ export function isManagerBasedSvelteConst(
     const pattern = new RegExp(`${escapeRegExp(managerName)}(?:\\s*\\.\\s*\\w+|\\s*\\()`);
     return pattern.test(normalizedRightHandSide);
   });
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

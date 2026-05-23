@@ -3,11 +3,9 @@ import * as path from "node:path";
 import { FolderCheckEntry } from "../../../type/struct/folder-check-entry";
 import { FolderCheckReport } from "../../../type/struct/folder-check-report";
 
-type DirectoryReader = (targetPath: string) => Promise<fs.Dirent[]>;
-
 export class FolderCheck {
   public constructor(
-    private readonly readDirectory: DirectoryReader = async (targetPath) =>
+    private readonly readDirectory: (targetPath: string) => Promise<fs.Dirent[]> = async (targetPath) =>
       fs.promises.readdir(targetPath, { withFileTypes: true })
   ) {}
 

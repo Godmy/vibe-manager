@@ -5,6 +5,7 @@ import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
 import { createAuditViolation } from "../../create/audit-violation";
 import { formatErrorMessage } from "../../format/error-message";
+import { formatAllowedValueList } from "../../format/allowed-value-list";
 import { joinRelativePath } from "../../join/relative-path";
 
 export async function checkInvalidDataFile(
@@ -22,7 +23,7 @@ export async function checkInvalidDataFile(
 
   for (const fileName of files) {
     if (!dataExtensionSet.has(path.extname(fileName).toLowerCase())) {
-      const allowedDataExtensionList = formatAllowedDataExtensionList(dataExtensionSet);
+      const allowedDataExtensionList = formatAllowedValueList(dataExtensionSet);
 
       stats.violations.push(
         await createAuditViolation(
@@ -37,11 +38,4 @@ export async function checkInvalidDataFile(
       );
     }
   }
-}
-
-function formatAllowedDataExtensionList(dataExtensionSet: Set<string>): string {
-  return Array.from(dataExtensionSet)
-    .sort((left, right) => left.localeCompare(right))
-    .map((dataExtension) => `'${dataExtension}'`)
-    .join(", ");
 }

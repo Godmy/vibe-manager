@@ -1,4 +1,4 @@
-import { AuditError } from "../../../const/object/error";
+import { AuditError } from "../../alias/audit-error";
 
 export type AuditViolation = {
   error: AuditError;

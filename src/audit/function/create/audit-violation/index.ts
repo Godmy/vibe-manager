@@ -1,5 +1,5 @@
 import { AuditViolation } from "../../../type/struct/violation";
-import { AuditError } from "../../../const/object/error";
+import { AuditError } from "../../../type/alias/audit-error";
 import { ERROR_RECOMMENDATION } from "../../../const/object/error-recommendation";
 import { formatErrorMessage } from "../../format/error-message";
 import { toKebabCase } from "../../to/kebab-case";

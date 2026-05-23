@@ -1,3 +1,5 @@
+import { escapeRegExp } from "../../script/escape-reg-exp";
+
 export function hasSvelteImport(
   scriptContent: string,
   importedName: string
@@ -7,8 +9,4 @@ export function hasSvelteImport(
   );
 
   return pattern.test(scriptContent);
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

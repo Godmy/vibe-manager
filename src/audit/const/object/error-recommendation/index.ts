@@ -1,7 +1,5 @@
-import {
-  ERROR,
-  AuditError,
-} from "../error";
+import { ERROR } from "../error";
+import { AuditError } from "../../../type/alias/audit-error";
 
 export const ERROR_RECOMMENDATION: Record<AuditError, string> = {
   [ERROR.INVALID_CLUSTER]: "Rename the cluster directory from '{cluster}' to one of {allowedClusterList} or explicitly extend the cluster configuration.",

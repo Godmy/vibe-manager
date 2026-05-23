@@ -11,7 +11,22 @@ export class Auditor {
   public async createReport(
     workspaceRoot: string,
     selectedFolders: string[],
-    customization: AuditCustomization = createEmptyAuditCustomization()
+    customization: AuditCustomization = {
+      customClusterList: [],
+      customDataExtensionList: [],
+      customJointConstList: [],
+      customJointTypeList: [],
+      customJointInterfaceList: [],
+      customJointClassList: [],
+      customJointFunctionList: [],
+      customJointComponentList: [],
+      customJointDataList: [],
+      customFileNameAllList: [],
+      customFileNameOtherList: [],
+      customFileNameComponentList: [],
+      customFileNameStateList: [],
+      customFileNameTestList: []
+    }
   ): Promise<AuditReport> {
     const clusterSet = mergeCluster(customization.customClusterList);
     const dataExtensionSet = mergeDataExtension(customization.customDataExtensionList);
@@ -32,23 +47,4 @@ export class Auditor {
 
     return buildAuditReport(workspaceRoot, targets);
   }
-}
-
-function createEmptyAuditCustomization(): AuditCustomization {
-  return {
-    customClusterList: [],
-    customDataExtensionList: [],
-    customJointConstList: [],
-    customJointTypeList: [],
-    customJointInterfaceList: [],
-    customJointClassList: [],
-    customJointFunctionList: [],
-    customJointComponentList: [],
-    customJointDataList: [],
-    customFileNameAllList: [],
-    customFileNameOtherList: [],
-    customFileNameComponentList: [],
-    customFileNameStateList: [],
-    customFileNameTestList: []
-  };
 }

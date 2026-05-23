@@ -3,6 +3,7 @@ import { ERROR_MESSAGE } from "../../../const/object/error-message";
 import { AuditStats } from "../../../type/struct/stats";
 import { createAuditViolation } from "../../create/audit-violation";
 import { formatErrorMessage } from "../../format/error-message";
+import { formatAllowedValueList } from "../../format/allowed-value-list";
 
 export async function checkInvalidJoint(
   relativeDirectory: string,
@@ -37,11 +38,4 @@ export async function checkInvalidJoint(
       )
     );
   }
-}
-
-function formatAllowedValueList(valueSet: Set<string>): string {
-  return Array.from(valueSet)
-    .sort((left, right) => left.localeCompare(right))
-    .map((value) => `'${value}'`)
-    .join(", ");
 }

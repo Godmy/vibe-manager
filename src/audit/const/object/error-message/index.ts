@@ -1,7 +1,5 @@
-import {
-  ERROR,
-  AuditError,
-} from "../error";
+import { ERROR } from "../error";
+import { AuditError } from "../../../type/alias/audit-error";
 
 export const ERROR_MESSAGE: Record<AuditError, string> = {
   [ERROR.INVALID_CLUSTER]: "Unknown cluster '{cluster}'.",

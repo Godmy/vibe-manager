@@ -22,5 +22,3 @@ export const ERROR = {
   INLINE_SVELTE_INTERFACE: "INLINE_SVELTE_INTERFACE",
   INLINE_SVELTE_FUNCTION: "INLINE_SVELTE_FUNCTION"
 } as const;
-
-export type AuditError = (typeof ERROR)[keyof typeof ERROR];
