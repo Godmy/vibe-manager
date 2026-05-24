@@ -17,16 +17,7 @@ import { isSvelteDispatchConst } from "../../is/svelte-dispatch-const";
 import { joinRelativePath } from "../../join/relative-path";
 import { readSvelteScriptContent } from "../../read/svelte-script-content";
 import { toAuditRecommendation } from "../../to/audit-recommendation";
-
-const SVELTE_RUNE_PREFIX_LIST = [
-  "$props",
-  "$derived",
-  "$state",
-  "$effect",
-  "$bindable",
-  "$inspect",
-  "$host"
-];
+import { SVELTE_RUNE_PREFIX_LIST } from "../../../const/value/svelte-rune-prefix-list";
 
 export async function checkInlineSvelteDeclaration(
   currentDirectory: string,

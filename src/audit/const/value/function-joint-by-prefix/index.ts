@@ -1,0 +1,22 @@
+export const FUNCTION_JOINT_BY_PREFIX: Array<[string, string]> = [
+  ["use", "hook"],
+  ["handle", "script"],
+  ["on", "script"],
+  ["load", "async"],
+  ["fetch", "async"],
+  ["save", "async"],
+  ["update", "async"],
+  ["delete", "async"],
+  ["convert", "transform"],
+  ["map", "transform"],
+  ["filter", "transform"],
+  ["sort", "transform"],
+  ["group", "transform"],
+  ["format", "script"],
+  ["parse", "script"],
+  ["validate", "script"],
+  ["calculate", "script"],
+  ["compute", "script"],
+  ["compare", "script"],
+  ["generate", "script"]
+];

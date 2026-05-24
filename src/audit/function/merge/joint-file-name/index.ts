@@ -5,6 +5,7 @@ import { COMPONENT_FILE_NAME } from "../../../const/array/file-name-component";
 import { OTHER_FILE_NAME } from "../../../const/array/file-name-other";
 import { STATE_FILE_NAME } from "../../../const/array/file-name-state";
 import { TEST_FILE_NAME } from "../../../const/array/file-name-test";
+import { mergeFileNameList } from "../file-name-list";
 
 export function mergeJointFileName(
   customization: AuditCustomization
@@ -51,18 +52,4 @@ export function mergeJointFileName(
     other,
     joint: jointFileNameMap
   };
-}
-
-function mergeFileNameList(baseFileNameList: string[], customFileNameList: string[]): Set<string> {
-  const fileNameSet = new Set<string>(baseFileNameList);
-
-  for (const fileName of customFileNameList) {
-    const normalizedFileName = fileName.trim();
-
-    if (normalizedFileName.length > 0) {
-      fileNameSet.add(normalizedFileName);
-    }
-  }
-
-  return fileNameSet;
 }

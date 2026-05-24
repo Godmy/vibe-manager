@@ -7,6 +7,8 @@ import { AuditStats } from "../../../type/struct/stats";
 import { createAuditViolation } from "../../create/audit-violation";
 import { hasSvelteStateConst } from "../../has/svelte-state-const";
 import { hasSvelteStateImport } from "../../has/svelte-state-import";
+import { formatExpectedImportSource } from "../../format/expected-import-source";
+import { hasSiblingStateEntry } from "../../has/sibling-state-entry";
 import { joinRelativePath } from "../../join/relative-path";
 import { readSvelteScriptContent } from "../../read/svelte-script-content";
 import { resolveSiblingStateDirectory } from "../../resolve/sibling-state-directory";
@@ -70,27 +72,3 @@ export async function checkComponentStateContract(
   }
 }
 
-async function hasSiblingStateEntry(siblingStateDirectory: string): Promise<boolean> {
-  try {
-    const stat = await fs.promises.stat(siblingStateDirectory);
-
-    if (!stat.isDirectory()) {
-      return false;
-    }
-  } catch {
-    return false;
-  }
-
-  return (
-    fs.existsSync(joinRelativePath(siblingStateDirectory, "index.svelte.ts")) ||
-    fs.existsSync(joinRelativePath(siblingStateDirectory, "index.ts"))
-  );
-}
-
-function formatExpectedImportSource(relativeDirectory: string): string {
-  const segmentList = relativeDirectory.split("/");
-  const domain = segmentList[0] ?? "unknown";
-  const familySegmentList = segmentList.slice(3);
-
-  return `'${[domain, "function", "state", ...familySegmentList].join("/")}'`;
-}

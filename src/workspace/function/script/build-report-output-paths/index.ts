@@ -1,12 +1,7 @@
 import * as path from "node:path";
 import { AuditReport } from "../../../../audit/type/struct/report";
+import { ReportOutputPaths } from "../../../type/struct/report-output-paths";
 import { formatReportTimestamp } from "../format-report-timestamp";
-
-export type ReportOutputPaths = {
-  reportDirectoryPath: string;
-  jsonReportPath: string;
-  markdownReportPath: string;
-};
 
 export function buildReportOutputPaths(
   configuredOutputFolder: string,
